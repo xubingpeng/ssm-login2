@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc.xsd">
+    <!-- 数据源 -->
+    <context:property-placeholder location="classpath:db.properties"></context:property-placeholder>
+    <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource">
+        <property name="driverClassName" value="${driver}"></property>
+        <property name="url" value="${url}"></property>
+        <!--如果这里的value写成username,spring会寻找系统的环境变量，即计算机的电脑名称，所以这里的value要避开username这一名称-->
+        <property name="username" value="${user}"></property>
+        <property name="password" value="${password}"></property>
+    </bean>
+    <!-- spring整合mybatis，可以自动通过SQLSessionFactory创建sqlSession，无需手动配置 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+    <!-- 扫描mapper包，Java代码中获取mapper的bean的时候，自动将对应的bean的首字母小写来获取 -->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.jxd.mapper"></property>
+        <!-- 扫描包时，如果配置了SqlSessionFactory,spring会优先读取sqlSessionFactory，这个时候，db.properties还未加载 -->
+
+        <!--这里如果是配置的一个数据源的话可以舍弃这一句，如果配置多个数据源，必须要有这个来进行区分-->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+    <mvc:annotation-driven/>
+    <context:component-scan base-package="com.jxd.service"></context:component-scan>
+    <context:component-scan base-package="com.jxd.controller"></context:component-scan>
+</beans>
